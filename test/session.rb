@@ -1,11 +1,17 @@
 require 'minitest/spec'
+require 'minitest/unit'
 require 'minitest/autorun'
-require 'nrepl/session'
+require 'nrepl'
+
+# Start NREPL server
+port = 57519
+pid = NREPL.start(57519)
+pid_waiter = NREPL.wait_until_ready(pid)
 
 describe NREPL::Session do
   before do
-    #@pid = NREPL.start 57519
-    @session = NREPL::Session.new(57519)
+    NREPL.wait_until_available(port, NREPL::DEFAULT_CONNECTION_TIMEOUT)
+    @session = NREPL::Session.new(port)
   end
   
   it "sends and receives a single message" do
@@ -57,6 +63,11 @@ describe NREPL::Session do
   
   after do
     @session.close
-    #NREPL.stop(@pid)
   end
+end
+
+MiniTest::Unit.after_tests do
+  # Stop nREPL server
+  NREPL.stop(pid)
+  pid_waiter.join
 end

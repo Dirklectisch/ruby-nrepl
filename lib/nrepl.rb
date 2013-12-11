@@ -26,7 +26,7 @@ module NREPL
       session.last_response?(resp, msg_id)
     end
     session.close
-    stop(pid.to_i)
+    stop(pid.to_i) # TODO: This sometimes throws an error, needs fixing
     true
   end
   
