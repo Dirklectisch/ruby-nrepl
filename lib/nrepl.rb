@@ -1,9 +1,28 @@
 require 'nrepl/session'
+require 'socket'
+require 'timeout'
 
 module NREPL
   
   def self.connect host = '127.0.0.1', port
     Session.new host, port
+  end
+  
+  def self.wait_until_available host = '127.0.0.1', port, seconds
+    Timeout::timeout(seconds) do
+      sleep(1) until port_open? host, port
+      return true
+    end
+    return false
+  end
+  
+  def self.port_open? host, port
+    begin
+      TCPSocket.new(host, port).close
+      true
+    rescue Errno::ECONNREFUSED, Errno::EHOSTUNREACH
+      false
+    end
   end
   
   def self.start host = '127.0.0.1', port

@@ -32,4 +32,25 @@ describe NREPL do
       e.must_be_instance_of RuntimeError
     end
   end
+  
+  it "checks if the remote port is open" do
+    
+    port = 57519
+    begin
+      NREPL.port_open?('127.0.0.1', port)
+    rescue => e
+      e.must_be_instance_of Errno::ECONNREFUSED
+    end
+    
+  end
+  
+  it "waits until port is available for connection" do
+    
+    pid = NREPL.start(57519)
+    pid_waiter = NREPL.wait_until_ready(pid)
+    NREPL.wait_until_available(57519, 10).must_equal(true)
+    NREPL.stop(pid)
+    pid_waiter.join 
+    
+  end
 end
