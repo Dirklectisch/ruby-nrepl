@@ -5,21 +5,15 @@ require 'nrepl'
 describe NREPL do
   
   it "starts and stops a local server" do
-    pid = NREPL.start 57519
+    # Start a new nREPL server
+    pid = NREPL.start(57519)
     
-    # Wait for nREPL to start
-    pid_waiter = Thread.new { Process.wait(pid) }
-    sleep(1) until pid_waiter.status == 'sleep'
+    # Wait for nREPL server to start
+    pid_waiter = NREPL.wait_until_ready(pid)
     pid_waiter.alive?.must_equal(true)
     pid_waiter.status.must_equal('sleep') # Hopefully ready for IO
     
     #TODO: Test connection
-    # session = NREPL.connect 57519
-    # msg = {
-    #   'op' => 'describe'
-    # }
-    # msg_id = @session.send(msg)
-    # puts msg_id
     
     NREPL.stop(pid)
     
@@ -28,4 +22,14 @@ describe NREPL do
     pid_waiter.alive?.must_equal(false)
   end
   
+  it "throws an error when waiting for an invalid process" do
+    
+    pid = 57519
+    
+    begin
+      NREPL.wait_until_ready(pid)
+    rescue => e
+      e.must_be_instance_of RuntimeError
+    end
+  end
 end
