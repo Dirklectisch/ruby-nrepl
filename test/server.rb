@@ -4,7 +4,12 @@ require 'nrepl'
 
 describe NREPL do
   
-  it "starts and stops a local server" do
+  # it "starts, connects, disconnects and stops an nrepl server/session" do
+  #   session = NREPL.start_and_connect(57519)
+  #   NREPL.disconnect_and_stop(session).must_equal(true)
+  # end
+  
+  it "waits for the local server to start and stop" do
     # Start a new nREPL server
     pid = NREPL.start(57519)
     
@@ -12,8 +17,6 @@ describe NREPL do
     pid_waiter = NREPL.wait_until_ready(pid)
     pid_waiter.alive?.must_equal(true)
     pid_waiter.status.must_equal('sleep') # Hopefully ready for IO
-    
-    #TODO: Test connection
     
     NREPL.stop(pid)
     
@@ -53,4 +56,5 @@ describe NREPL do
     pid_waiter.join 
     
   end
+
 end

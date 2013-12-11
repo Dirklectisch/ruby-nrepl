@@ -4,6 +4,32 @@ require 'timeout'
 
 module NREPL
   
+  DEFAULT_CONNECTION_TIMEOUT = 10
+  
+  def self.start_and_connect host = '127.0.0.1', port
+    pid = start(host, port)
+    wait_until_ready(pid)
+    wait_until_available(host, port, DEFAULT_CONNECTION_TIMEOUT)
+    connect(host, port)
+  end
+  
+  def self.disconnect_and_stop session
+    # TODO: re-implement this once the Session class is more fleshed out
+    get_pid_msg = {
+      'op' => 'eval',
+      'code' => '(Integer. (first (.. java.lang.management.ManagementFactory (getRuntimeMXBean) (getName) (split "@"))))'
+    }
+    msg_id = session.send(get_pid_msg)
+    pid = nil
+    session.responses.take_until do |resp|
+      pid = resp['value'] if resp['value']
+      session.last_response?(resp, msg_id)
+    end
+    session.close
+    stop(pid.to_i)
+    true
+  end
+  
   def self.connect host = '127.0.0.1', port
     Session.new host, port
   end
