@@ -3,10 +3,16 @@ require 'minitest/unit'
 require 'minitest/autorun'
 require 'nrepl'
 
-# Start NREPL server
 port = 57519
-pid = NREPL.start(57519)
-pid_waiter = NREPL.wait_until_ready(pid)
+
+unless NREPL.port_open?('127.0.0.1', port)
+  # Start a nREPL server
+  persistent_server = false
+  pid = NREPL.start(port)
+  pid_waiter = NREPL.wait_until_ready(pid)
+else
+  persistent_server = true
+end
 
 describe NREPL::Session do
   before do
@@ -76,7 +82,9 @@ describe NREPL::Session do
 end
 
 MiniTest::Unit.after_tests do
-  # Stop nREPL server
-  NREPL.stop(pid)
-  pid_waiter.join
+  unless persistent_server == true
+    # Stop nREPL server
+    NREPL.stop(pid)
+    pid_waiter.join
+  end
 end
