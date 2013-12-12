@@ -15,9 +15,8 @@ module NREPL
     def initialize host = '127.0.0.1', port
       @conn = TCPSocket.new host, port
       @parser = BEncode::Parser.new(@conn)
-      @timeout = 5 # Seconds
       @responses = Enumerator.new { |y|
-        while msg =  Timeout::timeout(@timeout) { @parser.parse! }
+        while msg =  @parser.parse!
           y << msg
         end
       }

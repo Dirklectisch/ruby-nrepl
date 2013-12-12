@@ -52,13 +52,11 @@ describe NREPL::Session do
   end
   
   it "times out if no response is given within time limit" do
-    @session.timeout = 0.1
     begin
-      @session.responses.take(1)
+      @session.responses.with_timeout(0.1).take(1)
     rescue Timeout::Error => e
       e.must_be_instance_of Timeout::Error
     end
-    @session.timeout = 5
   end
   
   after do
