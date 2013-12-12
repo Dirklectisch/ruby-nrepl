@@ -59,6 +59,17 @@ describe NREPL::Session do
     end
   end
   
+  it "does not times out if no response is within time limit" do
+    msg = {
+      'op' => 'describe'
+    }
+    
+    msg_id = @session.send(msg)
+    resp = @session.responses.with_timeout(5).take(1)
+    
+    resp.first['id'].must_equal(msg_id)
+  end
+  
   after do
     @session.close
   end
