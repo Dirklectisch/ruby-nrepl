@@ -21,9 +21,9 @@ module NREPL
     }
     msg_id = session.send(get_pid_msg)
     pid = nil
-    session.responses.take_until do |resp|
+    resps = session.responses.take_until(&session.last_response(msg_id))
+    resps = resps.map do |resp|
       pid = resp['value'] if resp['value']
-      session.last_response?(resp, msg_id)
     end
     session.close
     stop(pid.to_i) # TODO: This sometimes throws an error, needs fixing

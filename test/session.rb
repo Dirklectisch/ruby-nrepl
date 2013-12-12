@@ -38,11 +38,8 @@ describe NREPL::Session do
     }
     
     msg_id = @session.send(msg)
-    resps = @session.responses.take_until do |resp| 
-      @session.last_response?(resp, msg_id)
-    end
-    
-    resps.count.must_be(:>, 0)
+    resps = @session.responses.take_until(&@session.last_response(msg_id))
+    resps.count.must_be(:>, 1)
   end
   
   it "it sends and receives multiple messages" do

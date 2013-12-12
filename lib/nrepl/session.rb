@@ -8,13 +8,12 @@ require 'timeout'
 module NREPL
   class Session
     
-    attr_reader :responses
-    attr_accessor :handlers
-    attr_accessor :timeout
+    attr_reader :responses  
       
     def initialize host = '127.0.0.1', port
       @conn = TCPSocket.new host, port
       @parser = BEncode::Parser.new(@conn)
+      @handlers = {}
       @responses = Enumerator.new { |y|
         while msg =  @parser.parse!
           y << msg
@@ -29,8 +28,10 @@ module NREPL
       msg['id']
     end
     
-    def last_response? resp, msg_id
-      resp['status'] && resp['id'] == msg_id && resp['status'] == ['done']
+    def last_response msg_id
+      Proc.new do |resp|
+        resp['status'] && resp['id'] == msg_id && resp['status'] == ['done']
+      end
     end
     
     def close
