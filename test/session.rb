@@ -54,6 +54,19 @@ describe NREPL::Session do
     resps.first['id'].wont_equal( resps.last['id'] )
   end
   
+  it 'caches responses' do
+    msg = {
+      'op' => 'describe'
+    }
+    
+    3.times { @session.send(msg) }
+    resps_one = @session.responses.take(3)
+    resps_two = @session.responses.take(3)
+    
+    resps_one.must_equal( resps_two )
+    
+  end
+  
   it "times out if no response is given within time limit" do
     begin
       @session.responses.with_timeout(0.1).take(1)

@@ -13,12 +13,21 @@ module NREPL
     def initialize host = '127.0.0.1', port
       @conn = TCPSocket.new host, port
       @parser = BEncode::Parser.new(@conn)
-      @handlers = {}
+      
+      # Create a lazy enumerator that caches responses
+      cache = []
       @responses = Enumerator.new { |y|
+        head = 0
+        while head < cache.count
+          y << cache[head]
+          head += 1
+        end
         while msg =  @parser.parse!
+          cache << msg
           y << msg
         end
       }
+      
     end
     
     def send message
