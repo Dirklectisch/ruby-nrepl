@@ -3,7 +3,6 @@ require 'bencode'
 require 'securerandom'
 require 'nrepl/core_ext/securerandom'
 require 'nrepl/core_ext/enumerable'
-require 'timeout'
 
 module NREPL
   class Session

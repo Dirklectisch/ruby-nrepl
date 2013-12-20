@@ -1,3 +1,5 @@
+require 'timeout'
+
 module Enumerable
   def take_until
     if block_given?
