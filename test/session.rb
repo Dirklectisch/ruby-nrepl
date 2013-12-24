@@ -3,6 +3,8 @@ require 'minitest/unit'
 require 'minitest/autorun'
 require 'nrepl'
 
+include NREPL::Handlers
+
 port = 57519
 
 unless NREPL.port_open?('127.0.0.1', port)
@@ -38,7 +40,8 @@ describe NREPL::Session do
     }
     
     msg_id = @session.send(msg)
-    resps = @session.responses.take_until(&@session.last_response(msg_id))
+    resps = @session.responses.lazy.select(&where_msg(msg_id)).take_until(&where_status(['done'])).force
+    
     resps.count.must_be(:>, 1)
   end
   

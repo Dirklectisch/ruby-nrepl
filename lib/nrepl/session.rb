@@ -3,6 +3,7 @@ require 'bencode'
 require 'securerandom'
 require 'nrepl/core_ext/securerandom'
 require 'nrepl/core_ext/enumerable'
+require 'nrepl/core_ext/enumerator_lazy'
 
 module NREPL
   class Session
@@ -15,7 +16,7 @@ module NREPL
       
       # Create a lazy enumerator that caches responses
       cache = []
-      @responses = Enumerator.new { |y|
+      @responses = Enumerator.new do |y|
         head = 0
         while head < cache.count
           y << cache[head]
@@ -25,7 +26,7 @@ module NREPL
           cache << msg
           y << msg
         end
-      }
+      end
       
     end
     
