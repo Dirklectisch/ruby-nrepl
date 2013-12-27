@@ -44,7 +44,18 @@ describe NREPL::Session do
     resps.count.must_be(:>, 1)
   end
   
-  it "it sends and receives multiple messages" do
+  it "filters response values from the response message stream" do
+    msg = {
+      'op' => 'eval',
+      'code' => '(+ 2 3) (+ 4 5)'
+    }
+
+    vals = @session.op(msg)
+    vals.first.must_equal("5")
+    vals.last.must_equal("9")
+  end
+  
+  it "sends and receives multiple messages" do
     msg = {
       'op' => 'describe'
     }

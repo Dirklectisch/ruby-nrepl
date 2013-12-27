@@ -41,13 +41,16 @@ module NREPL
     end
     
     def recv msg_id
-      @responses.lazy.select(&where_id(msg_id)).take_until(&where_status(['done']))
+      @responses.lazy.select(&where_id(msg_id))
+                     .take_until(&where_status(['done']))
     end
     
-    def last_response msg_id
-      Proc.new do |resp|
-        resp['status'] && resp['id'] == msg_id && resp['status'] == ['done']
-      end
+    def handle resps
+      resps.inject([], &handle_(select_value))
+    end
+    
+    def op message
+      handle(recv(send(message)))
     end
     
     def close
