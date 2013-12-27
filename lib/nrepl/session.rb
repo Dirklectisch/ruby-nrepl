@@ -9,13 +9,15 @@ require 'nrepl/handlers'
 module NREPL
   class Session
     
-    attr_reader :responses  
+    attr_reader :responses
+    attr_accessor :out
      
     include NREPL::Handlers
       
     def initialize host = '127.0.0.1', port
       @conn = TCPSocket.new host, port
       @parser = BEncode::Parser.new(@conn)
+      @out = $stdout
       
       # Create a lazy enumerator that caches responses
       cache = []
@@ -46,7 +48,7 @@ module NREPL
     end
     
     def handle resps
-      resps.inject([], &handle_(select_value))
+      resps.inject([], &handle_(print_out(@out), select_value))
     end
     
     def op message

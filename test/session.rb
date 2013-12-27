@@ -2,6 +2,7 @@ require 'minitest/spec'
 require 'minitest/unit'
 require 'minitest/autorun'
 require 'nrepl'
+require 'stringio'
 
 include NREPL::Handlers
 
@@ -53,6 +54,18 @@ describe NREPL::Session do
     vals = @session.op(msg)
     vals.first.must_equal("5")
     vals.last.must_equal("9")
+  end
+  
+  it "prints output to defined io pipe" do
+    msg = {
+      'op' => 'eval',
+      'code' => '(print "foo") (print "bar")'
+    }
+    
+    string_io = StringIO.new
+    @session.out = string_io
+    @session.op(msg)
+    string_io.string.must_equal("foo\nbar\n")
   end
   
   it "sends and receives multiple messages" do

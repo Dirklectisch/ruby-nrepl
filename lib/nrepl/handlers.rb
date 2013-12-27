@@ -7,15 +7,16 @@ module NREPL
         res = hs.pop.call(resp)
         memo << res if res
         hs.each do |handler|
-          hs.call(resp)
+          handler.call(resp)
         end
         memo
       end
     end
     
-    def to_values
-      Proc.new do |memo, resp|
-        memo << select_value.call(resp)
+    def print_out io_out
+      Proc.new do |resp|
+        output = select_out.call(resp)
+        io_out.puts(output) if output
       end
     end
     
