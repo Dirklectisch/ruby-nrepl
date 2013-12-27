@@ -39,8 +39,7 @@ describe NREPL::Session do
       'code' => '(+ 2 3)'
     }
     
-    msg_id = @session.send(msg)
-    resps = @session.responses.lazy.select(&where_msg(msg_id)).take_until(&where_status(['done'])).force
+    resps = @session.recv(@session.send(msg))
     
     resps.count.must_be(:>, 1)
   end

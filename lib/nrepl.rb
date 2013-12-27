@@ -1,4 +1,5 @@
 require 'nrepl/session'
+require 'nrepl/handlers'
 require 'socket'
 require 'timeout'
 
@@ -21,8 +22,8 @@ module NREPL
     }
     msg_id = session.send(get_pid_msg)
     pid = nil
-    resps = session.responses.take_until(&session.last_response(msg_id))
-    resps = resps.map do |resp|
+    resps = session.recv(msg_id)
+    resps = resps.each do |resp|
       pid = resp['value'] if resp['value']
     end
     session.close
