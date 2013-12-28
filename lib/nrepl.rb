@@ -15,19 +15,14 @@ module NREPL
   end
   
   def self.disconnect_and_stop session
-    # TODO: re-implement this once the Session class is more fleshed out
     get_pid_msg = {
       'op' => 'eval',
       'code' => '(Integer. (first (.. java.lang.management.ManagementFactory (getRuntimeMXBean) (getName) (split "@"))))'
-    }
-    msg_id = session.send(get_pid_msg)
-    pid = nil
-    resps = session.recv(msg_id)
-    resps = resps.each do |resp|
-      pid = resp['value'] if resp['value']
-    end
+    } 
+    
+    resp = session.op(get_pid_msg)
     session.close
-    stop(pid.to_i) # TODO: This sometimes throws an error, needs fixing
+    stop(resp.first.to_i) # TODO: This sometimes throws an error, needs fixing
     true
   end
   
@@ -81,7 +76,7 @@ module NREPL
   
   def self.stop gid
     unless gid == 0
-      Process.kill('SIGTERM', -gid)
+      Process.kill('SIGTERM', gid)
     end
   end
   
