@@ -11,18 +11,29 @@ module NREPL
     pid = start(host, port)
     wait_until_ready(pid)
     wait_until_available(host, port, DEFAULT_CONNECTION_TIMEOUT)
-    connect(host, port)
+    session = connect(host, port)
+    
+    set_pid_msg = {
+      'op' => 'eval',
+      'code' => "(def user/lein-gid #{pid})"
+    }
+    session.op(set_pid_msg)
+    
+    # TODO: Implement some kind of clearing mechanism
+    #session.clear! 
+    session
   end
   
   def self.disconnect_and_stop session
+    
     get_pid_msg = {
       'op' => 'eval',
-      'code' => '(Integer. (first (.. java.lang.management.ManagementFactory (getRuntimeMXBean) (getName) (split "@"))))'
-    } 
+      'code' => "user/lein-gid"
+    }
     
     resp = session.op(get_pid_msg)
     session.close
-    stop(resp.first.to_i) # TODO: This sometimes throws an error, needs fixing
+    stop(resp.first.to_i)
     true
   end
   
@@ -76,7 +87,7 @@ module NREPL
   
   def self.stop gid
     unless gid == 0
-      Process.kill('SIGTERM', gid)
+      Process.kill('SIGTERM', -gid)
     end
   end
   

@@ -4,10 +4,10 @@ require 'nrepl'
 
 describe NREPL do
   
-  # it "starts, connects, disconnects and stops an nrepl server/session" do
-  #   session = NREPL.start_and_connect(57519)
-  #   NREPL.disconnect_and_stop(session).must_equal(true)
-  # end
+  it "starts, connects, disconnects and stops an nrepl server/session" do
+    session = NREPL.start_and_connect(57519)
+    NREPL.disconnect_and_stop(session).must_equal(true)
+  end
   
   it "waits for the local server to start and stop" do
     # Start a new nREPL server
