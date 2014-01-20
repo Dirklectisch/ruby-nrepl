@@ -60,7 +60,9 @@ module NREPL
   
   def self.start host = '127.0.0.1', port
     # Start a new nREPL process
-    cmd = %x[which lein].rstrip || '/usr/local/bin/lein'
+    cmd = %x[which lein].rstrip 
+    cmd = '/usr/local/bin/lein' if cmd.empty?
+    
     argv = []
     argv << 'trampoline' if File.exist?('project.clj')
     argv += ['repl', ':headless']
