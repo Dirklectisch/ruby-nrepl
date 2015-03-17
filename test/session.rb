@@ -46,53 +46,43 @@ describe NREPL::Session do
   end
   
   it "filters response values from the response message stream" do
-    msg = {
-      'op' => 'eval',
-      'code' => '(+ 2 3) (+ 4 5)'
-    }
-
-    vals = @session.op(msg)
+    vals = @session.op('eval', code: '(+ 2 3) (+ 4 5)')
     vals.first.must_equal("5")
     vals.last.must_equal("9")
   end
   
   it "prints output to defined io pipe" do
-    msg = {
-      'op' => 'eval',
-      'code' => '(print "foo") (print "bar")'
-    }
-    
     string_io = StringIO.new
     @session.out = string_io
-    @session.op(msg)
+    @session.op('eval', code: '(print "foo") (print "bar")')
     string_io.string.must_equal("foo\nbar\n")
   end
-  
+
   it "sends and receives multiple messages" do
     msg = {
       'op' => 'describe'
     }
-    
+
     2.times { @session.send(msg) }
     resps = @session.responses.take(2)
-    
+
     resps.count.must_be(:==, 2)
     resps.first['id'].wont_equal( resps.last['id'] )
   end
-  
+
   it 'caches responses' do
     msg = {
       'op' => 'describe'
     }
-    
+
     3.times { @session.send(msg) }
     resps_one = @session.responses.take(3)
     resps_two = @session.responses.take(3)
-    
+
     resps_one.must_equal( resps_two )
-    
+
   end
-  
+
   it "times out if no response is given within time limit" do
     begin
       @session.responses.with_timeout(0.1).take(1)
@@ -100,15 +90,15 @@ describe NREPL::Session do
       e.must_be_instance_of Timeout::Error
     end
   end
-  
-  it "does not times out if no response is within time limit" do
+
+  it "does not time out if no response is out of time limit" do
     msg = {
       'op' => 'describe'
     }
-    
+
     msg_id = @session.send(msg)
     resp = @session.responses.with_timeout(5).take(1)
-    
+
     resp.first['id'].must_equal(msg_id)
   end
   

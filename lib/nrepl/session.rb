@@ -47,12 +47,24 @@ module NREPL
                      .take_until(&where_status(['done']))
     end
     
-    def handle resps
-      resps.inject([], &handle_(print_out(@out), select_value))
+    def raw message
+      recv(send(message))
     end
     
-    def op message
-      handle(recv(send(message)))
+    def op name, opts = {}
+      
+      # Convert keyword keys to strings
+      opts.keys.each do |key|
+        opts[key.to_s] = opts.delete(key)
+      end
+      
+      opts['op'] = name.to_s
+      
+      handle(raw(opts))
+    end
+    
+    def handle resps
+      resps.inject([], &handle_(print_out(@out), select_value))
     end
     
     def close
