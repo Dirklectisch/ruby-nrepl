@@ -4,13 +4,14 @@ require 'minitest/autorun'
 require 'nrepl'
 require 'stringio'
 
-include NREPL::Handlers
+include NREPL::ResponseHelpers
 
 port = 57519
 
 unless NREPL.port_open?('127.0.0.1', port)
   # Start a nREPL server
   persistent_server = false
+  Dir.chdir(File.dirname(__FILE__) + "/fixtures")
   pid = NREPL.start(port)
   pid_waiter = NREPL.wait_until_ready(pid)
 else
@@ -39,22 +40,22 @@ describe NREPL::Session do
       'op' => 'eval',
       'code' => '(+ 2 3)'
     }
-    
+
     resps = @session.recv(@session.send(msg))
-    
+
     resps.count.must_be(:>, 1)
   end
-  
+
   it "filters response values from the response message stream" do
-    vals = @session.op('eval', code: '(+ 2 3) (+ 4 5)')
+    vals = @session.eval('(+ 2 3) (+ 4 5)')
     vals.first.must_equal("5")
     vals.last.must_equal("9")
   end
-  
+
   it "prints output to defined io pipe" do
     string_io = StringIO.new
     @session.out = string_io
-    @session.op('eval', code: '(print "foo") (print "bar")')
+    @session.eval('(print "foo") (print "bar")')
     string_io.string.must_equal("foo\nbar\n")
   end
 

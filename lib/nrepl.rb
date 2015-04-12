@@ -1,11 +1,10 @@
 require 'nrepl/session'
-require 'nrepl/handlers'
 require 'socket'
 require 'timeout'
 
 module NREPL
   
-  DEFAULT_CONNECTION_TIMEOUT = 10
+  DEFAULT_CONNECTION_TIMEOUT = 60
   
   def self.start_and_connect host = '127.0.0.1', port
     pid = start(host, port)

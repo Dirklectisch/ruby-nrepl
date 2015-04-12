@@ -4,15 +4,16 @@ require 'securerandom'
 require 'nrepl/core_ext/securerandom'
 require 'nrepl/core_ext/enumerable'
 require 'nrepl/core_ext/enumerator_lazy'
-require 'nrepl/handlers'
+require 'nrepl/response_helpers'
 
 module NREPL
+  
   class Session
     
     attr_reader :responses
     attr_accessor :out
      
-    include NREPL::Handlers
+    include NREPL::ResponseHelpers
       
     def initialize host = '127.0.0.1', port
       @conn = TCPSocket.new host, port
@@ -44,7 +45,7 @@ module NREPL
     
     def recv msg_id
       @responses.lazy.select(&where_id(msg_id))
-                     .take_until(&where_status(['done']))
+                     .take_until(&is_done)
     end
     
     def raw message
@@ -60,11 +61,14 @@ module NREPL
       
       opts['op'] = name.to_s
       
-      handle(raw(opts))
+      raw(opts)
     end
     
-    def handle resps
-      resps.inject([], &handle_(print_out(@out), select_value))
+    def eval code
+      resps = op(:eval, code: code).force
+      resps.map(&print_out(@out))
+      vals = resps.select(&has_value).map(&select_value)
+      vals.size == 1 ? vals.first : vals
     end
     
     def close
