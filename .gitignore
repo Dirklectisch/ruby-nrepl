@@ -1,2 +1,4 @@
 target/
+test/fixtures/target/
+test/fixtures/.nrepl-port
 tmp/
