@@ -30,9 +30,9 @@ describe NREPL::Session do
     }
     
     msg_id = @session.send(msg)
-    resp = @session.responses.next
+    resp = @session.recv(msg_id)
     
-    resp['id'].must_equal(msg_id)
+    resp.first['id'].must_equal(msg_id)
   end
   
   it "sends and receives a multi part message" do
@@ -91,16 +91,27 @@ describe NREPL::Session do
       e.must_be_instance_of Timeout::Error
     end
   end
-
-  it "does not time out if no response is out of time limit" do
+  
+  it "has a session id" do
+    @session.session_id.wont_be_nil
+  end
+  
+  it "is possible to interrupt an eval request" do
+    t = Thread.new do
+      @session.op(:eval, code: '(Thread/sleep 10000)', session: @session.session_id)
+    end
+    res = @session.interrupt
+    t.join
+    res.first['status'].must_equal(["done"])
+    
     msg = {
-      'op' => 'describe'
+      'op' => 'eval',
+      'code' => '(Thread/sleep 10000)',
+      'session' => @session.session_id
     }
-
     msg_id = @session.send(msg)
-    resp = @session.responses.with_timeout(5).take(1)
-
-    resp.first['id'].must_equal(msg_id)
+    ress = @session.interrupt(msg_id)
+    ress.first['status'].must_equal(["done"])
   end
   
   after do

@@ -1,4 +1,5 @@
 target/
 test/fixtures/target/
 test/fixtures/.nrepl-port
+test/fixtures/.lein-repl-history
 tmp/

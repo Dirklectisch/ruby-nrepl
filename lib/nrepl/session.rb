@@ -10,12 +10,14 @@ module NREPL
   
   class Session
     
-    attr_reader :responses
+    attr_reader :responses, :session_id
     attr_accessor :out
      
     include NREPL::ResponseHelpers
       
     def initialize host = '127.0.0.1', port
+      @host = host
+      @port = port
       @conn = TCPSocket.new host, port
       @parser = BEncode::Parser.new(@conn)
       @out = $stdout
@@ -33,6 +35,11 @@ module NREPL
           y << msg
         end
       end
+      
+      # Clone a new session to aquire a session_id
+      @session_id = self.op(:clone)
+                        .select(&has_('new-session'))
+                        .first['new-session']
       
     end
     
@@ -65,13 +72,26 @@ module NREPL
     end
     
     def eval code
-      resps = op(:eval, code: code).force
+      resps = op(:eval, code: code, session: session_id).force
       resps.map(&print_out(@out))
       vals = resps.select(&has_value).map(&select_value)
       vals.size == 1 ? vals.first : vals
     end
     
+    # TODO: Prevent blocking on interruption error
+    def interrupt msg_id = nil
+      new_session = NREPL::Session.new(@host, @port)
+      unless msg_id
+        res = new_session.op(:interrupt, session: session_id).force
+      else
+        res = new_session.op(:interrupt, { :session => session_id, :"interrupt-id" => msg_id }).force
+      end
+      new_session.close
+      res
+    end
+    
     def close
+      op(:close, session: session_id)
       @conn.close
     end
     
